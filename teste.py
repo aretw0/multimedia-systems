@@ -65,7 +65,15 @@ if __name__ == "__main__":
 
 
 
-   """ temps1 = time.time()
+""" 
+    compressed_data = zlib.compress(original_data, zlib.Z_BEST_COMPRESSION)
+
+    compress_ratio = (float(len(original_data)) - float(len(compressed_data))) / float(len(original_data))
+
+    print('Compressed: %d%%' % (100.0 * compress_ratio))  
+
+
+    temps1 = time.time()
     print("Tempo final: " + str(time.time() - temps1))
     
     operator.itemgetter(1)
