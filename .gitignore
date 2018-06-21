@@ -58,3 +58,7 @@ docs/_build/
 target/
 
 \.vscode/
+multimedia-systems.sublime-workspace
+multimedia-systems.sublime-project
+output_com/*
+output_dec/*
