@@ -7,9 +7,10 @@ import plotly.plotly as py
 
 # print('Number of arguments:',str(len(sys.argv)),  'arguments.')
 # print('Argument List:', str(sys.argv))
+# todo salvar em binario, limitar o rule (alg)
 
 deecomp_config = {
-    'inpf': '',
+    'inpf': '', # input/lena.bmp
     'outpf': '',
     'orig_size': 0,
     'alg': '',
@@ -39,37 +40,29 @@ def _rule(mode,wsize,data):
     algs['rule']['use'] = True
     if mode == 'com':
         workdata = data.hex()
+        
+        
+        word = workdata[0]
+        lword = ''
+        tvalue = 0
+        s_count = wsize - 8 # retirando os bits para a letra
         temps1 = time.time()
         # do something
-        datalen = len(workdata)
-        word = workdata[0:wsize]
-        tvalue = 1
-        lword = ''
-        for k in range(0,datalen,wsize):
-            tword = workdata[k:k+wsize]
-            # print(tword)
-            if tword == word:
-                if k:
+        for ch in workdata:
+            if ch == word:
+                if tvalue < s_count:
                     tvalue += 1
-            else:       
-                if tvalue == 1 and k:
-                    tlen = len(word)
-                    if tlen < wsize:
-                        tvalue = tlen - wsize
-                        for t in range(wsize-tlen):
-                            word += '*'
-                if lword:
-                    lword += ';'
-                lword += str(tvalue) + '/' + word        
-                word = tword
-                tvalue = 1
-        if tvalue == 1 and k:
-            tlen = len(word)
-            if tlen < wsize:
-                tvalue = tlen - wsize
-                for t in range(wsize-tlen):
-                    word += '*'
-        lword += ';' + str(tvalue) + '/' + word     
+                else:
+                    # if s_count > 3 and tvalue < 10:
+                    #     lword += '0'
+                    lword += str(tvalue) + word
+                    tvalue = 0
+            else:
+                lword += str(tvalue) + word
+                word = ch
+                tvalue = 0
+        
+        lword += str(tvalue) + ch
         
         algs['rule']['timec'] = time.time() - temps1
         finaldata = lword        
@@ -232,7 +225,7 @@ def breakdown():
 
     deecomp_config['orig_size'] = orig_size = os.stat(inputf).st_size
 
-    with open(inputf,openmode['read'][mode]) as ifile:
+    with open(inputf,'rb') as ifile:
         read_data = ifile.read()
 
     algs[alg]['fn'](mode,wsize,read_data)
@@ -241,8 +234,8 @@ def breakdown():
         if k != 'all':
             if algs[k]['use']:
                 nameout = name_out(k,mode,wsize,inputf,outputf)
-                with open(nameout,openmode['write'][mode]) as ofile:
-                    ofile.write(algs[k][mode])
+                with open(nameout,'wb') as ofile:
+                    ofile.write(algs[k][mode].encode())
                 if mode == 'com':
                     algs[k]['size'] = comp_size = os.stat(nameout).st_size
                     algs[k]['compress_ratio'] = compress_ratio = ((float(orig_size) - float(comp_size)) / float(orig_size))
@@ -309,3 +302,5 @@ def main(argv):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
+
+# breakdown()
